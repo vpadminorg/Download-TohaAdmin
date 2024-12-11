@@ -1,0 +1,55 @@
+{{/* layouts/shortcodes/upgrade-button.html */}}
+{{ $paymentPlatform := .Get "platform" | default "ko-fi" }}
+{{ $paymentType := .Get "paymentType" | default "donation" }}
+{{ $buttonText := .Get "text" | default "Upgrade to Pro" }}
+{{ $iframeUrl := .Get "url" | default "" }}
+{{ $paymentName := .Get "name" | default "Pro Subscription" }}
+{{ $needLogin := .Get "needLogin" | default "true" }}
+{{ $size := .Get "size" | default "default" }}
+
+<div class="vpadmin-upgrade-container"
+     data-platform="{{ $paymentPlatform }}"
+     data-payment-type="{{ $paymentType }}"
+     data-text="{{ $buttonText }}"
+     data-url="{{ $iframeUrl }}"
+     data-name="{{ $paymentName }}"
+     data-need-login="{{ $needLogin }}"
+     data-size="{{ $size }}">
+</div>
+
+<!-- 仅在页面中首次使用时注入脚本 -->
+{{ if not (.Page.Scratch.Get "upgrade-button-loaded") }}
+{{ .Page.Scratch.Set "upgrade-button-loaded" true }}
+<script>
+    function initUpgradeButtons() {
+        const containers = document.querySelectorAll('.vpadmin-upgrade-container');
+        containers.forEach(container => {
+            const config = {
+                paymentPlatform: container.dataset.platform,
+                paymentType: container.dataset.paymentType,
+                buttonText: container.dataset.text,
+                iframeUrl: container.dataset.url,
+                paymentName: container.dataset.name,
+                needLogin: container.dataset.needLogin,
+                size: container.dataset.size,
+                container: container
+            };
+
+            try {
+                const upgradeButton = createUpgradeButton(config);
+                //upgradeButton.show();
+            } catch (error) {
+                console.error('Error creating upgrade button:', error);
+            }
+        });
+    }
+
+    // 监听初始化完成事件
+    window.addEventListener('vpadminInitialized', initUpgradeButtons);
+
+    // 如果事件已经触发过，直接初始化
+    if (window.createUpgradeButton) {
+        initUpgradeButtons();
+    }
+</script>
+{{ end }}
